@@ -1489,6 +1489,21 @@ body {
   background: #000;
 }
 
+
+#photos { display:flex; 
+   flex-flow: row wrap;
+   
+    
+}
+
+.photo { height:200px; width:200px; overflow:hidden; }
+.photo img { width:267px; }
+
+body {background:black;}
+
+
+
+/* 
 #photos {
    -webkit-column-count: 4;
    -webkit-column-gap:   0px;
@@ -1500,3 +1515,5 @@ body {
   width: 100% !important;
   height: auto !important;
 }
+
+*/
