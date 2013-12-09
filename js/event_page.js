@@ -81,7 +81,8 @@
     };
 
     EventPageController.prototype.onDropboxError = function(client, error) {
-      alert("Something went wrong while talking to Dropbox: " + error);
+      /* alert("Something went wrong while talking to Dropbox: " + error); */
+      console.log ("Something went wrong while talking to Dropbox: " + error);
     };
 
     return EventPageController;
