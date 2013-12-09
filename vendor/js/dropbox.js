@@ -1436,6 +1436,7 @@
     };
 
     Client.prototype.stat = function(path, options, callback) {
+
       var httpCache, params, xhr;
       if ((!callback) && (typeof options === 'function')) {
         callback = options;
@@ -1496,6 +1497,7 @@
     };
 
     Client.prototype.readdir = function(path, options, callback) {
+
       var statOptions;
       if ((!callback) && (typeof options === 'function')) {
         callback = options;
@@ -1540,6 +1542,8 @@
         } else {
           entries = null;
         }
+
+        window.console.log('entry_stats', entry_stats);
         return callback(error, entries, stat, entry_stats);
       });
     };
@@ -3089,6 +3093,7 @@
       } else if (this.preflight || !Dropbox.Util.Xhr.doesPreflight) {
         return this.addOauthHeader(oauth);
       } else {
+        console.log('cacheFriendly', cacheFriendly);
         if (this.isGet && cacheFriendly) {
           return this.addOauthHeader(oauth);
         } else {

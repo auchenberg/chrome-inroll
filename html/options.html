@@ -7,57 +7,15 @@
     <script src="/js/options_view.js" type="text/javascript"></script>
   </head>
   <body>
-    <nav>
-      <h1>
-        InRoll
-      </h1>
-      <ol id="nav-list">
-        <li class="nav-list-item">
-          <a href="#download-flags">
-            <i class="icon-folder-close"></i> Folders
-          </a>
-        </li>
-        <li class="nav-list-item">
-          <a href="#dropbox-account">
-            <i class="icon-dropbox"></i> Dropbox Account
-          </a>
-        </li>
-      </ol>
-    </nav>
-    <section id="page-container" class="hidden">
-
-      <article id="download-flags">
-        <h2>Download Folder</h2>
-
-        <form id="download-flags-form" action="">
-          <p>
-            <label for="download-site-folder">
-              <input type="checkbox" id="download-site-folder" />
-              Group downloads by site
-            </label>
-          </p>
-          <p>
-            <label for="download-date-folder">
-              <input type="checkbox" id="download-date-folder" />
-              Group downloads by date
-            </label>
-          </p>
-          <p>
-            If you download a page from <em>Wikipedia</em> today, it will
-            be saved in
-            <span id="download-folder-sample"></span>
-          </p>
-        </form>
-      </article>
+    <section id="page-container">
 
       <article id="dropbox-account">
         <h2>Dropbox Account</h2>
         <div id="dropbox-info" class="hidden">
           <p id="dropbox-identity">
-            You are signed into Dropbox as
-            <span id="dropbox-name"></span>
-            &lt;<span id="dropbox-email"></span>&gt;
+            You are signed into Dropbox as <span id="dropbox-name"></span> &lt;<span id="dropbox-email"></span>&gt;
           </p>
+
           <form id="dropbox-signout-form" action="">
             <button type="submit" id="dropbox-signout">
               <i class="icon-off"></i> Sign out of Dropbox
@@ -65,9 +23,7 @@
           </form>
         </div>
         <div id="dropbox-no-info" class="hidden">
-          <p id="dropbox-no-identity">
-            You are not signed into Dropbox
-          </p>
+          <p id="dropbox-no-identity">You are not signed into Dropbox</p>
           <form id="dropbox-signin-form" action="">
             <button type="submit" id="dropbox-signin">
               <i class="icon-off"></i> Sign in to Dropbox

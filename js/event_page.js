@@ -7,10 +7,6 @@
 
       this.dropboxChrome = dropboxChrome;
 
-      chrome.browserAction.onClicked.addListener(function() {
-        return _this.onBrowserAction();
-      });
-
       chrome.runtime.onInstalled.addListener(function() {
         _this.onInstall();
         return _this.onStart();
@@ -48,69 +44,20 @@
 
     };
 
-    EventPageController.prototype.onBrowserAction = function() {
-      var _this = this;
-      return this.dropboxChrome.client(function(client) {
-        var credentials;
-        if (client.isAuthenticated()) {
-          chrome.tabs.create({
-            url: 'html/popup.html',
-            active: true,
-            pinned: false
-          });
-        }
-        credentials = client.credentials();
-        if (credentials.authState) {
-          client.reset();
-        }
-        return _this.signIn(function() {
-          return null;
-        });
-      });
-    };
-
     EventPageController.prototype.onDropboxAuthChange = function(client) {
       var credentials;
       if (client.isAuthenticated()) {
 
-        chrome.browserAction.setPopup({
-          popup: 'html/popup.html'
-        });
-
-        chrome.browserAction.setTitle({
-          title: "Signed in"
-        });
-
-        chrome.browserAction.setBadgeText({
-          text: ''
-        });
       } else {
 
-        chrome.browserAction.setPopup({
-          popup: ''
-        });
         credentials = client.credentials();
         if (credentials.authState) {
-          chrome.browserAction.setTitle({
-            title: 'Signing in...'
-          });
-          chrome.browserAction.setBadgeText({
-            text: '...'
-          });
-          chrome.browserAction.setBadgeBackgroundColor({
-            color: '#DFBF20'
-          });
+
+
         } else {
-          chrome.browserAction.setTitle({
-            title: 'Click to sign into Dropbox'
-          });
-          chrome.browserAction.setBadgeText({
-            text: '0'
-          });
-          chrome.browserAction.setBadgeBackgroundColor({
-            color: '#DF2020'
-          });
+
         }
+
       }
       return chrome.extension.sendMessage({
         notice: 'dropbox_auth'
@@ -134,11 +81,7 @@
     };
 
     EventPageController.prototype.onDropboxError = function(client, error) {
-      return this.errorNotice("Something went wrong while talking to Dropbox: " + error);
-    };
-
-    EventPageController.prototype.errorNotice = function(errorText) {
-      return webkitNotifications.createNotification('images/icon48.png', 'Download to Dropbox', errorText);
+      alert("Something went wrong while talking to Dropbox: " + error);
     };
 
     return EventPageController;

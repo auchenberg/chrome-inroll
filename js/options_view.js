@@ -6,41 +6,28 @@
       var _this = this;
       this.root = root;
       this.$root = $(this.root);
+
       this.$userInfo = $('#dropbox-info', this.$root);
       this.$userName = $('#dropbox-name', this.$userInfo);
       this.$userEmail = $('#dropbox-email', this.$userInfo);
+
       this.$signoutButton = $('#dropbox-signout', this.$userInfo);
       this.$signoutButton.on('click', function(event) {
         return _this.onSignoutClick(event);
       });
+
       this.$userNoInfo = $('#dropbox-no-info', this.$root);
+
       this.$signinButton = $('#dropbox-signin', this.$userNoInfo);
+
       this.$signinButton.on('click', function(event) {
         return _this.onSigninClick(event);
       });
-      this.$navItems = $('#nav-list .nav-list-item', this.$root);
-      this.$navLinks = $('#nav-list .nav-list-item a', this.$root);
-      this.$pageContainer = $('#page-container', this.$root);
-      this.$pages = $('#page-container article', this.$root);
-      this.$downloadSiteFolder = $('#download-site-folder', this.$root);
-      this.$downloadSiteFolder.on('change', function() {
-        return _this.onChange();
-      });
-      this.$downloadDateFolder = $('#download-date-folder', this.$root);
-      this.$downloadDateFolder.on('change', function() {
-        return _this.onChange();
-      });
-      this.$downloadFolderSample = $('#download-folder-sample', this.$root);
-      this.updateData(function() {
-        _this.updateVisiblePage();
-        _this.$pageContainer.removeClass('hidden');
-        return window.addEventListener('hashchange', function(event) {
-          return _this.updateVisiblePage();
-        });
-      });
+
       chrome.extension.onMessage.addListener(function(message) {
         return _this.onMessage(message);
       });
+
       this.reloadUserInfo();
     }
 
@@ -72,25 +59,6 @@
             return null;
           });
         });
-      });
-      return this;
-    };
-
-    OptionsView.prototype.updateVisiblePage = function() {
-      var pageHash, pageId,
-        _this = this;
-      pageId = window.location.hash.substring(1) || this.defaultPage;
-      this.$pages.each(function(index, page) {
-        var $page;
-        $page = $(page);
-        return $page.toggleClass('hidden', $page.attr('id') !== pageId);
-      });
-      pageHash = '#' + pageId;
-      this.$navItems.each(function(index, navItem) {
-        var $navItem, $navLink;
-        $navItem = $(navItem);
-        $navLink = $(_this.$navLinks[index]);
-        return $navItem.toggleClass('current', $navLink.attr('href') === pageHash);
       });
       return this;
     };
@@ -140,8 +108,6 @@
           return this.reloadUserInfo();
       }
     };
-
-    OptionsView.prototype.defaultPage = 'download-flags';
 
     return OptionsView;
 

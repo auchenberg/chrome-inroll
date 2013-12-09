@@ -1,7 +1,10 @@
 {
-  "key": "ahbkollhkhecfbmonajdngflpognkgnk",
+  "key": "cmlnmkcppiojopffhkllgmgcfpjjlpjd",
   "name": "InRoll",
   "version": "0.0.2",
+    "chrome_url_overrides": {
+    "newtab": "html/tab.html"
+  },
   "manifest_version": 2,
   "description": "",
   "icons": {
@@ -9,18 +12,10 @@
     "48": "images/icon48.png",
     "128": "images/icon128.png"
   },
-  "browser_action": {
-    "default_icon": {
-      "19": "images/action19.png",
-      "38": "images/action38.png"
-    },
-    "default_title": "Starting..."
-  },
   "permissions": [
-    "notifications",
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
-
   "background": {
     "scripts": [
       "vendor/js/dropbox.js",
@@ -35,6 +30,5 @@
   "web_accessible_resources": [
     "html/chrome_oauth_receiver.html"
   ],
-  "incognito": "split",
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self' chrome-extension-resource:"
+  "incognito": "split"
 }

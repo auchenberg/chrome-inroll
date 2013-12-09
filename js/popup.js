@@ -2,17 +2,48 @@
 
  var DownloadsView = (function() {
 
-    function saveCursorKey(key) {
-      chrome.storage.sync.set({
-        dropboxDeltaCursor: key
-      });
+    function getImageDataURL(url, callback) {
+        var data, canvas, ctx;
+        var img =  document.createElement("img");
+        img.setAttribute('crossOrigin','anonymous');
+
+        img.onload = function(){
+            // Create the canvas element.
+            canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            // Get '2d' context and draw the image.
+            ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            // Get canvas data URL
+            data = canvas.toDataURL();
+
+            callback(data);
+        };
+
+        img.src = url;
     }
 
-    function getCursorKey(callback){
-      chrome.storage.sync.get('dropboxDeltaCursor', function(data) {
+    function storeLastPhotos(hash, photos, callback) {
 
-        if(data && data.dropboxDeltaCursor) {
-          callback(data.dropboxDeltaCursor);
+      chrome.storage.local.remove('dropboxPhotos', function() {
+
+        console.log('storeLastPhotos.photos', photos);
+        chrome.storage.local.set({
+          dropboxPhotos : photos,
+          dropboxPhotosHash: hash
+        }, callback);
+
+      });
+
+    }
+
+    function getLastHash(callback) {
+      chrome.storage.local.get('dropboxPhotosHash', function(data) {
+
+        if(data && data.dropboxPhotosHash) {
+          console.log('getLastPhotos.dropboxPhotosHash', data.dropboxPhotosHash);
+          callback(data.dropboxPhotosHash);
         } else {
           callback(null);
         }
@@ -20,17 +51,12 @@
       });
     }
 
-    function storeChanges(changes) {
-      chrome.storage.sync.set({
-        dropboxLastChanges: changes
-      });
-    }
+    function getLastPhotos(callback) {
+      chrome.storage.local.get('dropboxPhotos', function(data) {
 
-    function getStoredLastChanges(callback) {
-      chrome.storage.sync.get('dropboxLastChanges', function(data) {
-
-        if(data && data.dropboxLastChanges) {
-          callback(data.dropboxLastChanges);
+        if(data && data.dropboxPhotos) {
+          console.log('getLastPhotos.dropboxPhotos', data.dropboxPhotos);
+          callback(data.dropboxPhotos);
         } else {
           callback(null);
         }
@@ -38,132 +64,101 @@
       });
     }
 
-    function getLatestChangesFromDropbox() {
+    function renderPhotos() {
 
-      var dfd = Q.defer();
+      console.log('dropbox.renderPhotos.start');
 
-      chrome.runtime.getBackgroundPage(function(eventPage) {
+      var html = [];
 
-        getCursorKey(function(key) {
+      getLastPhotos(function(photos) {
 
-          console.log('dropbox.pullChanges.fetching');
-
-          eventPage.controller.dropboxClient.pullChanges(key, function(err, data) {
-
-            if(err) {
-              console.log('dropbox.pullChanges.error');
-              dfd.reject(err);
-            }
-
-            console.log('dropbox.pullChanges.done');
-
-            if(data.cursorTag) {
-              saveCursorKey(data.cursorTag);
-              window.console.log('dropbox.pullChanges.cursorTag.updated', data.cursorTag);
-              window.console.log('dropbox.pullChanges.changes.number', data.changes.length);
-            }
-
-            if(data.shouldPullAgain) {
-              console.log('dropbox.pullChanges.pullAgain');
-              getLatestChangesFromDropbox().then(function(changes) {
-                dfd.resolve(changes);
-              });
-            }
-
-            if(data.changes && data.changes.length) {
-              console.log('dropbox.pullChanges.storedChanges');
-              storeChanges(data.changes);
-            }
-
-            getStoredLastChanges(function(changes) {
-              console.log('dropbox.pullChanges.done');
-              dfd.resolve(changes);
-            });
-
-          });
-
+        // Render
+        photos.forEach(function(photo) {
+          html.push("<div class='photo'><a href='"+photo.url+"' target='_blank'><img src='"+ photo.dataUrl +"'></a></div>");
         });
 
+        console.log('dropbox.renderPhotos.done');
+
+        $("#photos").html(html.join(''));
       });
-
-      return dfd.promise;
-
-    };
+    }
 
     function DownloadsView(root) {
       var _this = this;
       this.root = root;
       this.$root = $(this.root);
-      this.$header = $('#header', this.$root);
-
-      this.$userInfo = $('#dropbox-info', this.$header);
-      this.$userNoInfo = $('#dropbox-no-info', this.$header);
-      this.$userName = $('#dropbox-name', this.$userInfo);
-      this.$userEmail = $('#dropbox-email', this.$userInfo);
-
-      this.$optionsButton = $('#options-button', this.$header);
-      this.$optionsButton.click(function(event) {
-        return _this.onOptionsClick(event);
-      });
 
       chrome.extension.onMessage.addListener(function(message) {
         return _this.onMessage(message);
       });
 
-      this.reloadUserInfo();
       this.updateFileList();
-
-      this.dropboxCursor = null;
-
     }
 
-    DownloadsView.prototype.reloadUserInfo = function() {
+    DownloadsView.prototype.updateFileList = function() {
       var _this = this;
       chrome.runtime.getBackgroundPage(function(eventPage) {
-        return eventPage.controller.dropboxChrome.userInfo(function(userInfo) {
-          if (userInfo.name) {
-            _this.$userInfo.removeClass('hidden');
-            _this.$userNoInfo.addClass('hidden');
-            _this.$userName.text(userInfo.name);
-            return _this.$userEmail.text(userInfo.email);
-          } else {
-            _this.$userInfo.addClass('hidden');
-            return _this.$userNoInfo.removeClass('hidden');
-          }
+
+        console.log('dropbox.stat.start');
+
+        renderPhotos();
+
+        getLastHash(function(hash) {
+
+          var currentHash = hash;
+
+          eventPage.controller.dropboxClient.stat("/Camera Uploads", { readDir: true }, function(err, data) {
+
+              var newHash = data.contentHash;
+              var photos = data._json.contents;
+
+              if(newHash === currentHash) {
+                console.log('dropbox.stat.noChanges');
+                renderPhotos();
+                return false;
+              }
+
+              // Sort and take newest first
+              photos.sort(function(a,b) {
+                return new Date(b.modified) - new Date(a.modified);
+              });
+
+              // Take first 24
+              photos = photos.slice(0, 24);
+
+              var photoCount = photos.length;
+
+              console.log('dropbox.stat.finished', photoCount);
+
+              var mappedPhotos = [];
+
+              photos.forEach(function(photo, index) {
+                var url = eventPage.controller.dropboxClient.thumbnailUrl(photo.path, { size: "l" });
+                photo.url = url;
+
+                getImageDataURL(photo.url, function(dataUrl) {
+                  photo.dataUrl = dataUrl;
+
+                  mappedPhotos.push(photo);
+
+                  if(index+1 === photoCount) {
+                    console.log('mappedPhotos.done', mappedPhotos.length);
+                    storeLastPhotos(newHash, mappedPhotos, function() {
+                      renderPhotos();
+                    });
+                  }
+
+                });
+
+              });
+            });
+
+
         });
+
       });
-      return this;
-    };
-
-    DownloadsView.prototype.updateFileList = function() {
-
-      var promise = getLatestChangesFromDropbox();
-
-      $('section').text('Syncig with Dropbox...');
-
-      promise.done(function(changes) {
-        var html = [];
-        changes.forEach(function(item) {
-          html.push(JSON.stringify(item), '\t');
-        });
-        $('section').text(html.join('</br>'));
-      }.bind(this));
-
-      promise.fail(function(err) {
-        $('section').text('Something went wrong' + err);
-        window.console.log('err', err);
-      }.bind(this));
 
       return this;
-    };
-
-    DownloadsView.prototype.onOptionsClick = function(event) {
-      chrome.tabs.create({
-        url: 'html/options.html',
-        active: true,
-        pinned: false
-      });
-      return window.close();
     };
 
     DownloadsView.prototype.onMessage = function(message) {
