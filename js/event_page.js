@@ -66,6 +66,10 @@
 
 
     EventPageController.prototype.signOut = function(callback) {
+
+        chrome.storage.local.remove('dropboxPhotos');
+        chrome.storage.local.remove('dropboxPhotosHash');
+
         return dropboxChrome.signOut(callback);
     };
 
