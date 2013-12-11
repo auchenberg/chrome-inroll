@@ -120,7 +120,7 @@
 
               // Sort and take newest first
               photos.sort(function(a,b) {
-                return moment(b.modified).toDate() - moment(a.modified).toDate();
+                return moment(b.client_mtime).toDate() - moment(a.client_mtime).toDate();
               });
 
               // Take first 24
