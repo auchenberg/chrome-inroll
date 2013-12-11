@@ -142,6 +142,14 @@
                   mappedPhotos.push(photo);
 
                   if(index+1 === photoCount) {
+
+                    // Sort and take newest first, since the fetching is async.
+
+                    mappedPhotos.sort(function(a,b) {
+                      return moment(b.client_mtime).toDate() - moment(a.client_mtime).toDate();
+                    });
+
+
                     console.log('mappedPhotos.done', mappedPhotos.length);
                     storeLastPhotos(newHash, mappedPhotos, function() {
                       renderPhotos();
